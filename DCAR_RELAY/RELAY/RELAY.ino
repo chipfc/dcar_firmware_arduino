@@ -88,7 +88,8 @@ void setup()
 {
   wdt_enable(WDTO_1S);
   
-  digitalWrite(Pin13LED, 1);
+   
+  //digitalWrite(Pin13LED, 1);
   
   Serial.begin(9600);
   pinMode(RELAY_M1, OUTPUT);
@@ -98,7 +99,7 @@ void setup()
   pinMode(M2_PWM, OUTPUT);
   pinMode(M3_PWM, OUTPUT);
   pinMode(Pin13LED, OUTPUT);
-  digitalWrite(Pin13LED, 1);
+  
   digitalWrite(M1_PWM, 0);
   digitalWrite(M2_PWM, 0);
   digitalWrite(M3_PWM, 0);
@@ -113,20 +114,27 @@ void setup()
   pinMode(SSerialTxControl, OUTPUT);
   digitalWrite(SSerialTxControl, 0);
   
-  digitalWrite(Pin13LED, 1);
-
-  for(int i = 0; i < 200; i++){
-	getKeyInput();
-	delay(10);
+  
+  for(int i = 0; i < 100; i++){
+	  wdt_reset();
+	  getKeyInput();
+	  delay(10);
   }
   
   digitalWrite(Pin13LED, 0);
+  delay(500);
   
+  for(int i = 0; i < ID; i++){
+    wdt_reset();
+    digitalWrite(Pin13LED, 1);
+    delay(50);
+    digitalWrite(Pin13LED, 0);
+    delay(700);
+  }
 }
 
 void loop()
-{
-  
+{  
   wdt_reset();
   
   if (Serial.available()){
@@ -134,10 +142,7 @@ void loop()
     serialData[index] = byteReceived;
     index++;
   }
-  
-  if (ID < 6) {
-    TimeOutControl();
-  }
+   
   if ((serialData[0] == ID) && (index == 3)){
 	  
     digitalWrite(SSerialTxControl, RS485Transmit);
@@ -147,11 +152,11 @@ void loop()
     delay(3);
     digitalWrite(SSerialTxControl, RS485Receive);
     
-	int data = serialData[2];
+	  int data = serialData[2];
     pwm = data;
-	dir = 1;
+	  dir = 1;
 	
-	if (data < 10){
+	  if (data < 10){
       dir = 0;
       pwm = 0;
     }
@@ -185,27 +190,6 @@ int readID(){
   
   return _ID;
 }
-void overLoad()
-{
-  int M1 = analogRead(A0);
-  int M2 = analogRead(A1);
-  int M3 = analogRead(A7);
-  if ((M1 > 632) || (M1 < 392))
-  {
-    m1OverLoad = 1;
-    motorControl(0xf0, dir1, 10);
-  }
-  if ((M2 > 632) || (M2 < 392))
-  {
-    m2OverLoad = 1;
-    motorControl(0xf1, dir2, 10);
-  }
-  if ((M3 > 632) || (M3 < 392))
-  {
-    m3OverLoad = 1;
-    motorControl(0xf2, dir3, 10);
-  }
-}
 
 void motorControl(int _relay, int _dir, int _speed)
 {
@@ -223,31 +207,12 @@ void motorControl(int _relay, int _dir, int _speed)
 		digitalWrite(RELAY_M2, _dir);
 		break;
 		
-    case 0xf2:
+  case 0xf2:
 		analogWrite(M3_PWM, _speed);
 		delay(100);
 		digitalWrite(RELAY_M3, _dir);
 		break;
-    default:
+  default:
       break;
-  }
-}
-void TimeOutControl()
-{
-  if (M1isRun == 1)
-  {
-    if ((millis() - timeOut1) >= TIME_OUT)
-    {
-      motorControl(0xf0, 0, 0);
-      M1isRun = 0;
-    }
-  }
-  if (M2isRun == 1)
-  {
-    if ((millis() - timeOut2) >= TIME_OUT)
-    {
-      motorControl(0xf1, 0, 0);
-      M2isRun = 0;
-    }
   }
 }
