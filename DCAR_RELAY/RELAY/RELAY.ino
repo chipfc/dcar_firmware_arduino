@@ -24,6 +24,10 @@
 #define SW5 A1
 
 #define TIME_OUT 120000
+
+#define NORMAL_STATE 1
+#define PRESSED_STATE 0
+
 //SoftwareSerial Data(SSerialRX, SSerialTX); // RX, TX
 int byteReceived;
 int byteSend;
@@ -37,7 +41,8 @@ int relay_4 = 0;
 
 int relay_5 = 0;
 int relay_6 = 0;
-int ID = 255;
+
+int ID = 0;
 int dir;
 int dir1 = 3;
 int dir2 = 3;
@@ -56,9 +61,35 @@ int M1isRun = 0;
 int M2isRun = 0;
 int M3isRun = 0;
 
+int KeyReg0, KeyReg1, KeyReg2, KeyReg3;
+int TimeOutForKeyPress;
+
+void getKeyInput(){
+  KeyReg2 = KeyReg1;  
+  KeyReg1 = KeyReg0;  
+  KeyReg0 = readID();
+  if ((KeyReg1 == KeyReg0) && (KeyReg1 == KeyReg2)){
+    if (KeyReg2 != KeyReg3){
+      KeyReg3 = KeyReg2;  
+
+      if (KeyReg2 == PRESSED_STATE){      
+        TimeOutForKeyPress = 50;
+      } 
+    }else{
+		  TimeOutForKeyPress --;     
+      ID = KeyReg3; 
+    }
+  }
+}
+
+
+
 void setup()
 {
   wdt_enable(WDTO_1S);
+  
+  digitalWrite(Pin13LED, 1);
+  
   Serial.begin(9600);
   pinMode(RELAY_M1, OUTPUT);
   pinMode(RELAY_M2, OUTPUT);
@@ -81,72 +112,78 @@ void setup()
   pinMode(SW5, INPUT_PULLUP);
   pinMode(SSerialTxControl, OUTPUT);
   digitalWrite(SSerialTxControl, 0);
-  //  Data.begin(9600);
-  digitalWrite(Pin13LED, 0);
+  
+  digitalWrite(Pin13LED, 1);
 
-  readID();
+  for(int i = 0; i < 200; i++){
+	getKeyInput();
+	delay(10);
+  }
+  
+  digitalWrite(Pin13LED, 0);
+  
 }
 
 void loop()
 {
-  // Serial.println(analogRead(A0));
+  
   wdt_reset();
-  //  overLoad();
-  if (Serial.available())
-  {
+  
+  if (Serial.available()){
     byteReceived = Serial.read();
     serialData[index] = byteReceived;
     index++;
   }
-  readID(); // ID == 3 ID == 4 có time out port 1+2
+  
   if (ID < 6) {
     TimeOutControl();
   }
-  if ((serialData[0] == ID) && (index == 3))
-  {
+  if ((serialData[0] == ID) && (index == 3)){
+	  
     digitalWrite(SSerialTxControl, RS485Transmit);
     Serial.write(serialData[0]);
     Serial.write(serialData[1]);
     Serial.write(serialData[2]);
     delay(3);
     digitalWrite(SSerialTxControl, RS485Receive);
-    int data = serialData[2];
-    if (data < 10)
-    {
+    
+	int data = serialData[2];
+    pwm = data;
+	dir = 1;
+	
+	if (data < 10){
       dir = 0;
       pwm = 0;
     }
-    else
-    {
-      dir = 1;
-      pwm = data;
-    }
+    
     motorControl(serialData[1], dir, pwm);
 
     index = 0;
     serialData[0] = 0x00;
-    digitalWrite(Pin13LED, LOW);
+    
   }
-  else if ((serialData[0] != ID))
-  {
+  else if ((serialData[0] != ID)){
     index = 0;
     serialData[0] = 0x00;
   }
+  
+  delay(10);
 }
-void readID()
-{
-  ID = 0;
+int readID(){
+  
+  int _ID = 0;
   if (digitalRead(SW1) == 0)
-    ID += 1;
+    _ID += 1;
   if (digitalRead(SW2) == 0)
-    ID += 2;
+    _ID += 2;
   if (digitalRead(SW3) == 0)
-    ID += 4;
+    _ID += 4;
   if (digitalRead(SW4) == 0)
-    ID += 8;
+    _ID += 8;
   if (digitalRead(SW5) == 0)
-    ID += 16;
-  //Serial.println(ID);
+    _ID += 16;
+  
+  return _ID;
 }
 void overLoad()
 {
@@ -169,119 +206,28 @@ void overLoad()
     motorControl(0xf2, dir3, 10);
   }
 }
+
 void motorControl(int _relay, int _dir, int _speed)
 {
   switch (_relay)
   {
     case 0xf0:
-
-      if ((dir1 == _dir) && (pwm1 == _speed))
-        break;
-      else if (_dir == 0)
-      {
-        if (ID > 5) {
-          for (int i = pwm1; i > 0; i--) {
-            analogWrite(M1_PWM,  i);
-            delay(2);
-          }
-        }
-        analogWrite(M1_PWM, 0);
-        pwm1 = 0;
-        delay(100);
-        digitalWrite(RELAY_M1, 0);
-      }
-      else
-      {
-        if (_dir == 1)
-        {
-          analogWrite(M1_PWM, 0);
-          delay(50);
-          digitalWrite(RELAY_M1, 1);
-          delay(50);
-        }
-        if (ID > 5) {
-          for (int i = 0; i <= _speed; i++) {
-            analogWrite(M1_PWM,  i);
-            delay(2);
-          }
-        } else analogWrite(M1_PWM,  255);
-        M1isRun = 1;
-        timeOut1 = millis();
-        //   digitalWrite(M1_PWM, 1); //them sau
-        dir1 = _dir;
-        pwm1 = _speed;
-      }
-      break;
-    case 0xf1:
-      if ((dir2 == _dir) && (pwm2 == _speed))
-        break;
-      else if (_dir == 0)
-      {
-        if (ID > 5) {
-          for (int i = pwm2; i > 0; i--) {
-            analogWrite(M2_PWM,  i);
-            delay(2);
-          }
-        }
-        analogWrite(M2_PWM, 0);
-        pwm2 = 0;
-        delay(100);
-        digitalWrite(RELAY_M2, 0);
-      }
-      else
-      {
-        if (_dir == 1)
-        {
-          analogWrite(M2_PWM, 0);
-          delay(50);
-          digitalWrite(RELAY_M2, 1);
-          delay(50);
-        }
-        if (ID > 5) {
-          for (int i = 0; i <= _speed; i++) {
-            analogWrite(M2_PWM,  i);
-            delay(2);
-          }
-        } else analogWrite(M2_PWM,  255);
-        M2isRun = 1;
-        timeOut2 = millis();
-        //   digitalWrite(M1_PWM, 1); //them sau
-        dir2 = _dir;
-        pwm2 = _speed;
-      }
-      break;
+		analogWrite(M1_PWM, _speed);
+		delay(100);
+		digitalWrite(RELAY_M1, _dir);
+		break;
+    
+	case 0xf1:
+		analogWrite(M2_PWM, _speed);
+		delay(100);
+		digitalWrite(RELAY_M2, _dir);
+		break;
+		
     case 0xf2:
-      if ((dir3 == _dir) && (pwm3 == _speed))
-        break;
-      else if (_dir == 0)
-      {
-        for (int i = pwm3; i > 0; i--) {
-          analogWrite(M3_PWM,  i);
-          delay(2);
-        }
-        analogWrite(M3_PWM, 0);
-        pwm3 = 0;
-        delay(100);
-        digitalWrite(RELAY_M3, 0);
-      }
-      else
-      {
-        if (_dir == 1)
-        {
-          analogWrite(M3_PWM, 0);
-          delay(50);
-          digitalWrite(RELAY_M3, 1);
-          delay(50);
-        }
-        for (int i = 0; i <= _speed; i++) {
-          analogWrite(M3_PWM,  i);
-          delay(2);
-        }
-        //   digitalWrite(M1_PWM, 1); //them sau
-        dir3 = _dir;
-        pwm3 = _speed;
-      }
-      break;
+		analogWrite(M3_PWM, _speed);
+		delay(100);
+		digitalWrite(RELAY_M3, _dir);
+		break;
     default:
       break;
   }
