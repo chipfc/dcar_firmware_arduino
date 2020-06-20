@@ -76,8 +76,8 @@ void getKeyInput(){
         TimeOutForKeyPress = 50;
       } 
     }else{
-		  TimeOutForKeyPress --;     
-      ID = KeyReg3; 
+	  TimeOutForKeyPress --;     
+	  ID = KeyReg3; 
     }
   }
 }
@@ -136,7 +136,7 @@ void setup()
 void loop()
 {  
   wdt_reset();
-  
+  getKeyInput();
   if (Serial.available()){
     byteReceived = Serial.read();
     serialData[index] = byteReceived;
