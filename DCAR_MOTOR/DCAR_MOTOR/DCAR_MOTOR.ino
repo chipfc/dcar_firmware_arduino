@@ -26,6 +26,9 @@
 #define SW4 A2
 #define SW5 12
 
+#define NORMAL_STATE 1
+#define PRESSED_STATE 0
+
 #define TIME_OUT 120000
 //SoftwareSerial Data(SSerialRX, SSerialTX); // RX, TX
 int byteReceived;
@@ -59,6 +62,29 @@ int M1isRun = 0;
 int M2isRun = 0;
 int M3isRun = 0;
 
+int KeyReg0, KeyReg1, KeyReg2, KeyReg3;
+int TimeOutForKeyPress;
+
+void getKeyInput(){
+  KeyReg2 = KeyReg1;  
+  KeyReg1 = KeyReg0;  
+  KeyReg0 = readID();
+  if ((KeyReg1 == KeyReg0) && (KeyReg1 == KeyReg2)){
+    if (KeyReg2 != KeyReg3){
+      KeyReg3 = KeyReg2;  
+
+      if (KeyReg2 == PRESSED_STATE){      
+        TimeOutForKeyPress = 50;
+      } 
+    }else{
+      TimeOutForKeyPress --;     
+      ID = KeyReg3; 
+    }
+  }
+}
+
+
+
 void setup()
 {
   wdt_enable(WDTO_1S);
@@ -73,7 +99,7 @@ void setup()
   pinMode(M2_PWM, OUTPUT);
   pinMode(M3_PWM, OUTPUT);
   pinMode(Pin13LED, OUTPUT);
-  digitalWrite(Pin13LED, 1);
+  
   digitalWrite(M1_PWM, 0);
   digitalWrite(M2_PWM, 0);
   digitalWrite(M3_PWM, 0);
@@ -90,10 +116,26 @@ void setup()
   pinMode(SW5, INPUT_PULLUP);
   pinMode(2, OUTPUT);
   digitalWrite(2, 0);
-  //  Data.begin(9600);
-  digitalWrite(Pin13LED, 0);
+  
 
-  readID();
+
+  for(int i = 0; i < 100; i++){
+    wdt_reset();
+    getKeyInput();
+    delay(10);
+  }
+  
+  digitalWrite(Pin13LED, 0);
+  delay(500);
+  
+  for(int i = 0; i < ID; i++){
+    wdt_reset();
+    digitalWrite(Pin13LED, 1);
+    delay(50);
+    digitalWrite(Pin13LED, 0);
+    delay(700);
+  }
+
 }
 
 void loop()
@@ -101,13 +143,16 @@ void loop()
   // Serial.println(analogRead(A0));
   wdt_reset();
   overLoad();
+  
+  getKeyInput();
+  
   if (Serial.available())
   {
     byteReceived = Serial.read();
     serialData[index] = byteReceived;
     index++;
   }
-  readID();
+  
   TimeOutControl();
   if ((serialData[0] == ID) && (index == 3))
   {
@@ -139,22 +184,25 @@ void loop()
     index = 0;
     serialData[0] = 0x00;
   }
+  delay(10);
 }
-void readID()
-{
-  ID = 0;
+int readID(){
+  
+  int _ID = 0;
   if (digitalRead(SW1) == 0)
-    ID += 1;
+    _ID += 1;
   if (digitalRead(SW2) == 0)
-    ID += 2;
+    _ID += 2;
   if (digitalRead(SW3) == 0)
-    ID += 4;
+    _ID += 4;
   if (digitalRead(SW4) == 0)
-    ID += 8;
+    _ID += 8;
   if (digitalRead(SW5) == 0)
-    ID += 16;
-  //Serial.println(ID);
+    _ID += 16;
+  
+  return _ID;
 }
+
 void overLoad()
 {
   int M1 = analogRead(A0);
