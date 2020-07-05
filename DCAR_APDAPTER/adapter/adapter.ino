@@ -31,9 +31,7 @@ void loop() {
     digitalWrite(SSerialTxControl, RS485Transmit);
     Data.write(byteReceived);
     digitalWrite(SSerialTxControl, RS485Receive);
-    //   serialData[index] = byteReceived;
-    //   index++;
-    //   if (index == 8) index = 0;
+    
   }
   if (Data.available())
   {
