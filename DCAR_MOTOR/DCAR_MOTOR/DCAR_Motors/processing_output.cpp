@@ -170,7 +170,7 @@ void motorControl(int _motor, int _dir, int _speed)
       }
       break;
     case MOTOR_2_CODE:
-      if ((dir2 == _dir) && (pwm2 == _speed))
+     if ((dir2 == _dir) && (pwm2 == _speed))
         break;
       if (_speed == 10)
       {
@@ -182,8 +182,8 @@ void motorControl(int _motor, int _dir, int _speed)
       }
       else if (_speed < 10)
       {
-        /*  for (int i = pwm2; i > 0; i--) {
-              analogWrite(M2_PWM,  i);
+        /*  for (int i = pwm1; i > 0; i--) {
+              analogWrite(M1_PWM,  i);
               delay(2);
             }*/
         digitalWrite(M2_PWM, 0);
@@ -194,32 +194,36 @@ void motorControl(int _motor, int _dir, int _speed)
       }
       else
       {
-        if (_dir > 0)
+        if (((m2OverLoad == 1) && (dir2 != _dir)) || (m2OverLoad == 0))
         {
-          digitalWrite(M2_PWM, 0);
-          delay(50);
-          digitalWrite(RELAY_1_M2, 1);
-          digitalWrite(RELAY_2_M2, 0);
-          delay(50);
+          m2OverLoad = 0;
+          if (_dir == 1)
+          {
+            digitalWrite(M2_PWM, 0);
+            delay(50);
+            digitalWrite(RELAY_1_M2, 1);
+            digitalWrite(RELAY_2_M2, 0);
+            delay(50);
+          }
+          if (_dir == 0)
+          {
+            digitalWrite(M2_PWM, 0);
+            delay(50);
+            digitalWrite(RELAY_1_M2, 0);
+            digitalWrite(RELAY_2_M2, 1);
+            delay(50);
+          }
+          /*  for (int i = 0; i < _speed; i++) {
+                analogWrite(M1_PWM,  i);
+                delay(2);
+              }*/
+          M2isRun = 1;
+          timeOut2 = millis();
+          digitalWrite(M2_PWM, 1); //them sau
+          dir2 = _dir;
+          pwm2 = _speed;
         }
-        else
-        {
-          digitalWrite(M2_PWM, 0);
-          delay(50);
-          digitalWrite(RELAY_1_M2, 0);
-          digitalWrite(RELAY_2_M2, 1);
-          delay(50);
-        }
-        /*  for (int i = 0; i < _speed; i++) {
-              analogWrite(M2_PWM,  i);
-              delay(2);
-            }*/
       }
-      M2isRun = 1;
-      timeOut2 = millis();
-      digitalWrite(M2_PWM, 1);
-      dir2 = _dir;
-      pwm2 = _speed;
       break;
     case MOTOR_3_CODE:
       if ((dir3 == _dir) && (pwm3 == _speed))
@@ -234,9 +238,9 @@ void motorControl(int _motor, int _dir, int _speed)
       }
       else if (_speed < 10)
       {
-        /* for (int i = pwm3; i > 0; i--) {
-             analogWrite(M3_PWM,  i);
-             delay(2);
+        /*  for (int i = pwm1; i > 0; i--) {
+              analogWrite(M1_PWM,  i);
+              delay(2);
             }*/
         digitalWrite(M3_PWM, 0);
         pwm3 = 0;
@@ -246,32 +250,36 @@ void motorControl(int _motor, int _dir, int _speed)
       }
       else
       {
-        if (_dir > 0)
+        if (((m3OverLoad == 1) && (dir3 != _dir)) || (m3OverLoad == 0))
         {
-          digitalWrite(M3_PWM, 0);
-          delay(50);
-          digitalWrite(RELAY_1_M3, 1);
-          digitalWrite(RELAY_2_M3, 0);
-          delay(50);
+          m3OverLoad = 0;
+          if (_dir == 1)
+          {
+            digitalWrite(M3_PWM, 0);
+            delay(50);
+            digitalWrite(RELAY_1_M3, 1);
+            digitalWrite(RELAY_2_M3, 0);
+            delay(50);
+          }
+          if (_dir == 0)
+          {
+            digitalWrite(M3_PWM, 0);
+            delay(50);
+            digitalWrite(RELAY_1_M3, 0);
+            digitalWrite(RELAY_2_M3, 1);
+            delay(50);
+          }
+          /*  for (int i = 0; i < _speed; i++) {
+                analogWrite(M1_PWM,  i);
+                delay(2);
+              }*/
+          M1isRun = 1;
+          timeOut3 = millis();
+          digitalWrite(M3_PWM, 1); //them sau
+          dir3 = _dir;
+          pwm3 = _speed;
         }
-        else
-        {
-          digitalWrite(M3_PWM, 0);
-          delay(50);
-          digitalWrite(RELAY_1_M3, 0);
-          digitalWrite(RELAY_2_M3, 1);
-          delay(50);
-        }
-        /* for (int i = 0; i < _speed; i++) {
-             analogWrite(M3_PWM,  i);
-             delay(2);
-            }*/
       }
-      M3isRun = 1;
-      timeOut3 = millis();
-      digitalWrite(M3_PWM, 1);
-      dir3 = _dir;
-      pwm3 = _speed;
       break;
     default:
       break;
