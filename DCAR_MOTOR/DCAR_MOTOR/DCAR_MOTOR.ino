@@ -292,8 +292,8 @@ void motorControl(int _motor, int _dir, int _speed)
         digitalWrite(M2_PWM, 0);
         pwm2 = 0;
         delay(100);
-        digitalWrite(RELAY_1_M2, 1);
-        digitalWrite(RELAY_2_M2, 1);
+        digitalWrite(RELAY_1_M2, 0);
+        digitalWrite(RELAY_2_M2, 0);
       }
       else
       {
