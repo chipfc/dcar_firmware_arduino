@@ -103,12 +103,12 @@ void setup()
   digitalWrite(M1_PWM, 0);
   digitalWrite(M2_PWM, 0);
   digitalWrite(M3_PWM, 0);
-  digitalWrite(RELAY_1_M1, 1);
-  digitalWrite(RELAY_2_M1, 1);
-  digitalWrite(RELAY_1_M2, 1);
-  digitalWrite(RELAY_2_M2, 1);
-  digitalWrite(RELAY_1_M3, 1);
-  digitalWrite(RELAY_2_M3, 1);
+  digitalWrite(RELAY_1_M1, 0);
+  digitalWrite(RELAY_2_M1, 0);
+  digitalWrite(RELAY_1_M2, 0);
+  digitalWrite(RELAY_2_M2, 0);
+  digitalWrite(RELAY_1_M3, 0);
+  digitalWrite(RELAY_2_M3, 0);
   pinMode(SW1, INPUT_PULLUP);
   pinMode(SW2, INPUT_PULLUP);
   pinMode(SW3, INPUT_PULLUP);
@@ -236,16 +236,16 @@ void motorControl(int _motor, int _dir, int _speed)
         digitalWrite(M1_PWM, 0);
         pwm1 = 0;
         delay(100);
-        digitalWrite(RELAY_1_M1, 1);
-        digitalWrite(RELAY_2_M1, 1);
+        digitalWrite(RELAY_1_M1, 0);
+        digitalWrite(RELAY_2_M1, 0);
       }
       else if (_speed < 10)
       {
         digitalWrite(M1_PWM, 0);
         pwm1 = 0;
         delay(100);
-        digitalWrite(RELAY_1_M1, 1);
-        digitalWrite(RELAY_2_M1, 1);
+        digitalWrite(RELAY_1_M1, 0);
+        digitalWrite(RELAY_2_M1, 0);
       }
       else
       {
@@ -284,8 +284,8 @@ void motorControl(int _motor, int _dir, int _speed)
         digitalWrite(M2_PWM, 0);
         pwm2 = 0;
         delay(100);
-        digitalWrite(RELAY_1_M2, 1);
-        digitalWrite(RELAY_2_M2, 1);
+        digitalWrite(RELAY_1_M2, 0);
+        digitalWrite(RELAY_2_M2, 0);
       }
       else if (_speed < 10)
       {
@@ -332,16 +332,16 @@ void motorControl(int _motor, int _dir, int _speed)
         digitalWrite(M3_PWM, 0);
         pwm3 = 0;
         delay(100);
-        digitalWrite(RELAY_1_M3, 1);
-        digitalWrite(RELAY_2_M3, 1);
+        digitalWrite(RELAY_1_M3, 0);
+        digitalWrite(RELAY_2_M3, 0);
       }
       else if (_speed < 10)
       {
         digitalWrite(M3_PWM, 0);
         pwm3 = 0;
         delay(100);
-        digitalWrite(RELAY_1_M3, 1);
-        digitalWrite(RELAY_2_M3, 1);
+        digitalWrite(RELAY_1_M3, 0);
+        digitalWrite(RELAY_2_M3, 0);
       }
       else
       {
